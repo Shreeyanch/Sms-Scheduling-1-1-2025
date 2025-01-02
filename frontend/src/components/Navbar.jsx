@@ -15,6 +15,7 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
+    setDropdownOpen(!dropdownOpen);
     localStorage.removeItem("userInfo");
     localStorage.removeItem("token");
     navigate("/");
@@ -32,10 +33,16 @@ const Navbar = () => {
           {/* Admin-Only Buttons */}
           {user.role === "admin" && (
             <div className="flex space-x-4">
-              <button className="px-4 py-2 text-sm text-white bg-green-800 rounded-md hover:bg-green-900">
+              <button
+                onClick={() => navigate("/dashboard")}
+                className="px-4 py-2 text-sm text-white bg-green-800 rounded-md hover:bg-green-900"
+              >
                 Users
               </button>
-              <button className="px-4 py-2 text-sm text-white bg-green-800 rounded-md hover:bg-green-900">
+              <button
+                onClick={() => navigate("/work")}
+                className="px-4 py-2 text-sm text-white bg-green-800 rounded-md hover:bg-green-900"
+              >
                 Work
               </button>
             </div>

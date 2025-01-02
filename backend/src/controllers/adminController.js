@@ -1,4 +1,5 @@
 import userModel from "../models/userModel.js";
+import messageModel from "../models/messageModel.js";
 import validator from "validator";
 import bcrypt from "bcrypt";
 
@@ -44,7 +45,7 @@ export default class AdminController {
       }
     } catch (error) {
       console.log(error);
-      return res.status(400).send(error);
+      return res.status(500).send(error);
     }
   }
 
@@ -56,7 +57,42 @@ export default class AdminController {
       // Respond with the list of users
       return res.status(200).json({ success: true, users });
     } catch (error) {
-      return res.status(400).json({ message: "Error fetching users", error });
+      return res.status(500).json({ message: "Error fetching users", error });
+    }
+  }
+
+  async fetchMessages(req, res) {
+    try {
+      const messages = await messageModel
+        .find()
+        .sort({ createdAt: -1 })
+        .populate("createdBy", "email");
+      console.log(messages);
+
+      return res.status(200).json({ success: true, messages });
+    } catch (error) {
+      return res.status(500).json({ message: "Error fetching users", error });
+    }
+  }
+
+  async changeMessageStatus(req, res) {
+    try {
+      const { messageId, status } = req.body;
+      let updatedMessage = await messageModel.findByIdAndUpdate(messageId, {
+        status,
+      });
+      console.log(updatedMessage);
+      updatedMessage = await messageModel.populate(updatedMessage, {
+        path: "createdBy",
+        select: "email",
+      });
+      return res.json({
+        success: true,
+        message: "Message Status Updated Successfuly",
+        updatedMessage,
+      });
+    } catch (error) {
+      return res.status(500).send(error);
     }
   }
 }

@@ -1,6 +1,7 @@
 import userModel from "../models/userModel.js";
 import generateToken from "../config/generateToken.js";
 import bcrypt from "bcrypt";
+import messageModel from "../models/messageModel.js";
 
 export default class UserController {
   //User Login
@@ -8,7 +9,6 @@ export default class UserController {
     try {
       const { email, password } = req.body;
       console.log(req.body);
-      
 
       //check empty fields
       if (!email || !password) {
@@ -43,8 +43,48 @@ export default class UserController {
       });
     } catch (error) {
       console.log(error);
-      
-      return res.status(400).send(error);
+
+      return res.status(500).send(error);
+    }
+  }
+
+  //Message Scheduling
+  async scheduleMessage(req, res) {
+    try {
+      console.log(req.body);
+      const { title, message, dateandtime } = req.body;
+      if (!title || !message || !dateandtime) {
+        return res.json({ success: false, message: "All fields are required" });
+      }
+      if (message.length > 100) {
+        return res.json({
+          success: false,
+          message: "Your message should not me more than 100 characters.",
+        });
+      }
+      const messageSchedule = await messageModel.create({
+        ...req.body,
+        createdBy: req.user,
+      });
+
+      console.log(messageSchedule);
+      return res.json({
+        success: true,
+        message: "Message submitted successfully",
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+    }
+  }
+
+  async fetchMessageHistory(req, res) {
+    try {
+      const messages = await messageModel.find({ createdBy: req.user });
+      return res.json({ success: true, messages });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
     }
   }
 }

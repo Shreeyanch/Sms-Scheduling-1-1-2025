@@ -8,5 +8,11 @@ const adminController = new AdminController();
 
 router.post("/createUser", adminMiddleware, adminController.registerUser);
 router.get("/getUsers", adminMiddleware, adminController.fetchUsers);
+router.get("/getMessages", adminMiddleware, adminController.fetchMessages);
+router.put(
+  "/changeMessageStatus",
+  adminMiddleware,
+  adminController.changeMessageStatus
+);
 
 export default router;
