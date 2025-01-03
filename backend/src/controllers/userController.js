@@ -2,6 +2,10 @@ import userModel from "../models/userModel.js";
 import generateToken from "../config/generateToken.js";
 import bcrypt from "bcrypt";
 import messageModel from "../models/messageModel.js";
+import MailController from "./mailController.js";
+import smsFeeModel from "../models/smsFeeModel.js";
+
+const mailcontroller = new MailController();
 
 export default class UserController {
   //User Login
@@ -52,6 +56,8 @@ export default class UserController {
   async scheduleMessage(req, res) {
     try {
       console.log(req.body);
+      console.log(req.user);
+
       const { title, message, dateandtime } = req.body;
       if (!title || !message || !dateandtime) {
         return res.json({ success: false, message: "All fields are required" });
@@ -67,6 +73,9 @@ export default class UserController {
         createdBy: req.user,
       });
 
+      const mailResponse = await mailcontroller.notifyAdmin(req.user.email);
+
+      console.log(mailResponse);
       console.log(messageSchedule);
       return res.json({
         success: true,
@@ -85,6 +94,20 @@ export default class UserController {
     } catch (error) {
       console.log(error);
       return res.status(500).send(error);
+    }
+  }
+
+  async getSMSFee(req, res) {
+    try {
+      const smsFee = await smsFeeModel.findOne();
+      if (smsFee) {
+        res.json({ success: true, fee: smsFee.amount });
+      } else {
+        res.json({ success: false, message: "SMS fee not set." });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ success: false, message: "Server error." });
     }
   }
 }

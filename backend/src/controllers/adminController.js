@@ -2,6 +2,7 @@ import userModel from "../models/userModel.js";
 import messageModel from "../models/messageModel.js";
 import validator from "validator";
 import bcrypt from "bcrypt";
+import smsFeeModel from "../models/smsFeeModel.js";
 
 export default class AdminController {
   async registerUser(req, res) {
@@ -92,6 +93,30 @@ export default class AdminController {
         updatedMessage,
       });
     } catch (error) {
+      return res.status(500).send(error);
+    }
+  }
+
+  async changeSMSFee(req, res) {
+    try {
+      const { fee } = req.body;
+      if (!fee || fee <= 0) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid fee amount." });
+      }
+
+      let smsFee = await smsFeeModel.findOne();
+      if (!smsFee) {
+        smsFee = new smsFeeModel();
+      }
+
+      smsFee.amount = fee;
+
+      await smsFee.save();
+      res.json({ success: true, message: "SMS fee updated successfully." });
+    } catch (error) {
+      console.log(error);
       return res.status(500).send(error);
     }
   }

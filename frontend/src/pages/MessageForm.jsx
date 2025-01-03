@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import api from "../api/config";
 import { toast } from "react-toastify";
 import { ArrowBigLeft, ArrowBigRight } from "lucide-react";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const MessageForm = () => {
   const [formData, setFormData] = useState({
@@ -9,8 +10,10 @@ const MessageForm = () => {
     message: "",
     dateandtime: "",
   });
-  const [historyOpen, setHistoryOpen] = useState(false); // Sidebar toggle state
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [messageHistory, setMessageHistory] = useState([]);
+  const [smsFee, setSMSFee] = useState();
+  const [isLoading, setIsLoading] = useState(false);
 
   const [clickedIndex, setClickedIndex] = useState(null);
 
@@ -30,7 +33,16 @@ const MessageForm = () => {
         setMessageHistory(response.data.messages);
       }
     };
+    const fetchSMSFee = async () => {
+      const response = await api.get("/user/getSMSFee", { headers: { token } });
+      if (response.data.success) {
+        setSMSFee(response.data.fee);
+      } else {
+        console.log(response.data.message);
+      }
+    };
     fetchMessages();
+    fetchSMSFee();
   }, []);
 
   const handleInputChange = (e) => {
@@ -42,11 +54,13 @@ const MessageForm = () => {
     e.preventDefault();
 
     try {
+      setIsLoading(true);
       const response = await api.post(
         "/user/scheduleMessage",
         { ...formData },
         { headers: { token } }
       );
+      setIsLoading(false);
       if (response.data.success) {
         toast.success(response.data.message, {
           autoClose: 1000,
@@ -60,8 +74,8 @@ const MessageForm = () => {
         });
       }
     } catch (error) {
+      setIsLoading(false);
       console.log(error);
-
       toast.error(error.message, {
         autoClose: 2000,
         theme: "colored",
@@ -71,8 +85,14 @@ const MessageForm = () => {
 
   return (
     <div className="flex">
+      {isLoading && <LoadingSpinner />}
       {/* Sidebar Message History*/}
       <div
+        onKeyUp={(e) => {
+          if (e.key === "h" || e.key === "H") {
+            setHistoryOpen(!historyOpen);
+          }
+        }}
         className={`transition-transform duration-300 ${
           historyOpen ? "translate-x-0" : "-translate-x-full"
         } fixed top-0 left-0 h-full bg-gray-800 text-white w-1/4 shadow-md z-10`}
@@ -209,6 +229,10 @@ const MessageForm = () => {
               Schedule Message
             </button>
           </form>
+
+          <p className="block text-sm font-medium text-gray-700 mt-3 text-center">
+            Current SMS Charge: NPR {smsFee}
+          </p>
         </div>
       </div>
     </div>

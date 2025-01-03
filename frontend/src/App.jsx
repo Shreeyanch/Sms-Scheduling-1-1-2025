@@ -11,6 +11,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import { ToastContainer } from "react-toastify";
 import MessageForm from "./pages/MessageForm";
 import ScheduledMessage from "./pages/admin/ScheduledMessage";
+import LoadingSpinner from "./components/LoadingSpinner";
 
 const App = () => {
   const ProtectedRoute = ({ children }) => {
@@ -42,6 +43,7 @@ const App = () => {
   };
 
   return (
+      // <LoadingSpinner />
     <Router>
       <Navbar />
       <ToastContainer />
